@@ -10,14 +10,14 @@ const handleCodeInputFilled = (code: string) => {
 
 const mockFn = jest.fn(handleCodeInputFilled);
 
-describe('testing CodeInput', () => {
-  test("rendering 4 child elements properly", () => {
+describe('les tests de CodeInput', () => {
+  test("le rendu des 4 élements d'enfants soit correct", () => {
     render(<CodeInput length={4} onCodeFull={handleCodeInputFilled} />);
     const children = screen.queryAllByRole("input");
     expect(children.length).toBe(CHILD_INPUT_NUMBER);
   });
   
-  test("after inputint in the 1st element, it should have valid value and the sibiling should be focused", () => {
+  test("après l'entrée de 1er élement, la 2ième élement doit être focused", () => {
     render(<CodeInput length={4} onCodeFull={handleCodeInputFilled} />);
     const inputEles = screen.queryAllByRole("input");
     expect(inputEles.length).toBeGreaterThanOrEqual(2);
@@ -30,8 +30,7 @@ describe('testing CodeInput', () => {
     expect(nextInput).toHaveFocus();
   });
   
-  test("after inputint in the 1st element, when the sibling input elemnt should be focused," + 
-    "if this time input the backspace, the previous element should be focused", 
+  test("dans 2ième élement et pas encore entrée, après reculer, la 1er élement doit être focused", 
   () => {
     render(<CodeInput length={4} onCodeFull={handleCodeInputFilled} />);
     const inputEles = screen.queryAllByRole("input");
@@ -47,7 +46,7 @@ describe('testing CodeInput', () => {
     expect(firstInput).toHaveFocus();
   });
   
-  test("after 4 continuing valid input, the right result should be logged", () => {
+  test("après 4 fois des entrées, il faut imprimer ces 4 caractères dans le console", () => {
     render(<CodeInput length={4} onCodeFull={mockFn} />);
     const inputEles = screen.queryAllByRole("input");
     expect(inputEles.length).toBeGreaterThanOrEqual(CHILD_INPUT_NUMBER);
@@ -61,8 +60,8 @@ describe('testing CodeInput', () => {
   });
 })
 
-describe('testig child component', () => {
-  test("rendering the child component properly", () => {
+describe('les tests de child component', () => {
+  test("le rendu de composant soit correct", () => {
     const mockFn = jest.fn();
     render(
       <Child
@@ -78,7 +77,7 @@ describe('testig child component', () => {
     expect(inputEle).toBeInTheDocument();
   });
   
-  test("after clicking the input, it should be focused and the foucsHandler callback should be called", () => {
+  test("après cliquer l'élement, il doit être focused et le callback 'foucsHandler' doit être appelé", () => {
     const mockFn = jest.fn();
     render(
       <Child
@@ -97,9 +96,9 @@ describe('testig child component', () => {
     expect(mockFn).toHaveBeenCalledTimes(1);
   });
   
-  test("testing input event and input handler," +
-       "after input, the inner text of input element should be updated," +
-       "the inputHandler should be called and return the right input",
+  test("les tests de inputHandler quand il fault règler les évenements," +
+       "après l'entrée, sa valeur ou le texte dedans doit changer," +
+       "il faut appeler le 'inputHandler' et renvoyer la caractère correctement",
   async () => {
     const focusmockFn = jest.fn(),
       inputMockFn = jest.fn(ev => ev),

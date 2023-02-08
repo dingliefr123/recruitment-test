@@ -15,7 +15,7 @@ jest.mock('react', () => {
     };
 });
 
-describe('testing useChildHook', () => {
+describe('faire les tests de useChildHook', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -23,8 +23,8 @@ describe('testing useChildHook', () => {
     jest.resetAllMocks();
   });
 
-  test('it should function properly, an Ref should be returned' +
-      'and the internal useEffect hook should call the focus function of the refered element',
+  test('il faut fonctioner correctement, ref doit être renvoyé ' +
+      "et le hook useEffect de l'intérieur doit appeler la 'focus' méthode ",
   () => {
     let index = 0, activeIdx = 0;
     const mockFocus = jest.fn();
@@ -35,8 +35,8 @@ describe('testing useChildHook', () => {
     expect(mockFocus).toBeCalled();
   });
 
-  test('after updating activeIdx from 0 to 1,' +
-    'the internal useEffect hook should not recall the focus function',
+  test("après 'activeIdx' est changé de 0 à 1," +
+    "le useEffect hook ne doit pas rappeler la méthode 'focus'",
   () => {
     let index = 0, activeIdx = 0;
     const mockFocus = jest.fn();
@@ -50,17 +50,17 @@ describe('testing useChildHook', () => {
   });
 });
 
-describe('testing the useCodeInputHook', () => {
+describe('faire les tests de useCodeInputHook', () => {
   const ParrentProps = {
     length:4,
     onCodeFull: (code: string) => console.log({ code })
   };
-  test('it should function properly, and it should return such things,' +
-  'arr, the length of which should be 4 and all elements should be empty,' +
-  'activeIdx, the initialvalue should be 0,' +
-  'focusHandler, the callback function of focus event,' +
-  'inputHandler, the callback function of input event' +
-  'keydownHandler, the callback function of keydown event',
+  test('il faut fonctioner correctement, et il faut renvoyer les choses au-dessous,' +
+  'arr, avec la taille de quartre,' +
+  'activeIdx, soit 0,' +
+  'focusHandler, ' +
+  'inputHandler, ' +
+  'keydownHandler',
   () => {
     const { result: { current } } = renderHook(() => useCodeInputHook(ParrentProps));
     const {
@@ -79,9 +79,9 @@ describe('testing the useCodeInputHook', () => {
     expect(keydownHandler).toBeDefined();
   });
 
-  test('after typing the first letter by calling inputHandler,' +
-  'the activeIdx should updated from 0 to 1 and arr[0], which should save the first input,' +
-  'shpuld also be the value of input',
+  test('après entrer la premiere caractère, ' +
+  "'activeIdx' doit devenir 1 et arr[0] " +
+  'doit avoir la valeur, equale à la caractère déjà',
   async () => {
     const { result } = renderHook(() => useCodeInputHook(ParrentProps));
     const { inputHandler } = result.current;
@@ -92,9 +92,9 @@ describe('testing the useCodeInputHook', () => {
     await waitFor(() => expect(result.current.activeIdx).toBe(1));
   });
 
-  test('input and delete testing,' +
-  "after consecutive 2 input operations, the activeIdx should be 2 and arr should be ['1', '2']," +
-  "after consecutive 2 del operations, input arr should be ['1', '']",
+  test("les tests sur l'entrée et suppression," +
+  "après 2 fois des entrées, 'activeIdx' soit egale à 2 et arr soit ['1', '2']," +
+  "après 2 fois des suppression, arr soit ['1', '']",
   async () => {
     const { result } = renderHook(() => useCodeInputHook(ParrentProps));
     const { keydownHandler, inputHandler } = result.current;
@@ -114,7 +114,7 @@ describe('testing the useCodeInputHook', () => {
     expect(result.current.arr).toEqual([firstInput, '', '', '']);
   });
 
-  test("after inputing 4 times, the result should be logged like this '1234'",
+  test("aprè 4 fois d'entrées, le résultat soit '1234'",
   async () => {
     const logSpy = jest.spyOn(console, 'log');
     const { result } = renderHook(() => useCodeInputHook(ParrentProps));

@@ -158,7 +158,7 @@ type InputElementType =
   | React.FormEvent<HTMLInputElement>
   | React.KeyboardEvent<HTMLInputElement>;
 
-export function getIdxFromInputEleEv<T extends InputElementType>(ev: T) {
+function getIdxFromInputEleEv<T extends InputElementType>(ev: T) {
   const inputEle = ev.currentTarget;
   return findDomIdxOfParent(inputEle);
 }
