@@ -1,55 +1,28 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import Input from '../Input';
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import Input from "../Input";
 
 interface ICodeInputProps {
   length: number;
   onCodeFull: (code: string) => void;
 }
 
-/*====================Child=========================*/
-
-type IChildProps = {
-  index: number
-  activeIdx: number
-  value: string
-  onFocus: React.FocusEventHandler<HTMLInputElement>
-  onChange: React.ChangeEventHandler<HTMLInputElement>
-  onKeyDown: React.KeyboardEventHandler<HTMLInputElement>
-};
-
-export function useChildHook({ index, activeIdx }: Pick<IChildProps, "index" | "activeIdx">) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (activeIdx !== index) return;
-    inputRef.current?.focus();
-  });
-  return { inputRef }
-}
-
-export const Child: React.FC<IChildProps> = (props) => {
-  const { inputRef } = useChildHook(props);
-  const { activeIdx, ..._props } = props;
-  return <Input { ..._props } ref={inputRef} role="input" />;
-}
-
-/*================================CodeInput==========================*/
-
-export function useCodeInputHook({ length: MAX_LENGTH, onCodeFull }: ICodeInputProps) {
+export function useCodeInputHook({
+  length: MAX_LENGTH,
+  onCodeFull,
+}: ICodeInputProps) {
   const MAX_VALID_INDEX = MAX_LENGTH - 1;
-  const [arr, setArr] = useState<string[]>(['', '', '', '']);
+  const [arr, setArr] = useState<string[]>(new Array(MAX_LENGTH).fill(""));
   const [activeIdx, setActiveIdx] = useState(0);
+  const inputElesRef = useRef<(HTMLInputElement | null)[]>([]);
 
   const focusHandler = useCallback(
-    (ev: React.FormEvent<HTMLInputElement>) => {
-      const idx = getIdxFromInputEleEv(ev);
-      if (idx < 0) return;
-      const forceRefresh = () => setArr((arr) => [...arr]);
+    (idx: number) => {
       setActiveIdx((activeIdx) => {
-        if (activeIdx !== idx) forceRefresh();
+        if (activeIdx !== idx) inputElesRef.current[activeIdx]?.focus();
         return activeIdx;
       });
     },
-    [setActiveIdx, setArr]
+    [setActiveIdx]
   );
 
   const inputHandler = useCallback(
@@ -61,15 +34,13 @@ export function useCodeInputHook({ length: MAX_LENGTH, onCodeFull }: ICodeInputP
       setActiveIdx((curIdx) => {
         setArr((arr) => {
           arr[curIdx] = input;
-          if (curIdx === MAX_VALID_INDEX)
-            onCodeFull(arr.join(""));
+          if (curIdx === MAX_VALID_INDEX) onCodeFull(arr.join(""));
           return [...arr];
         });
         return Math.min(curIdx + 1, MAX_VALID_INDEX);
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setActiveIdx, setArr]
+    [setActiveIdx, setArr, MAX_VALID_INDEX, onCodeFull]
   );
 
   const keydownHandler = useCallback(
@@ -77,53 +48,63 @@ export function useCodeInputHook({ length: MAX_LENGTH, onCodeFull }: ICodeInputP
       const isDelEv = checkIsDelOrbackspaceEv(ev);
       if (!isDelEv) return;
       setActiveIdx((curIdx) => {
-        let hasValueAtCurIdx = false;
+        const prevIdx = Math.max(0, curIdx - 1);
         setArr((arr) => {
-          hasValueAtCurIdx = Boolean(arr[curIdx]);
-          arr[curIdx] = "";
+          console.log(arr, "  ", curIdx);
+          let hasValueAtCurIdx = Boolean(arr[curIdx]);
+          if (hasValueAtCurIdx) arr[curIdx] = "";
+          else arr[prevIdx] = "";
           return [...arr];
         });
-        if (hasValueAtCurIdx)
-          return curIdx;
-        return Math.max(0, curIdx - 1);
+        return prevIdx;
       });
     },
     [setArr, setActiveIdx]
   );
+
+  useEffect(() => {
+    inputElesRef.current[activeIdx]?.focus();
+  }, [activeIdx, inputElesRef]);
 
   return {
     arr,
     activeIdx,
     focusHandler,
     inputHandler,
-    keydownHandler
+    keydownHandler,
+    inputElesRef,
   };
 }
 
 const CodeInput: React.FC<ICodeInputProps> = (props) => {
   const {
     arr,
-    activeIdx,
     focusHandler,
-    inputHandler,
-    keydownHandler
+    inputHandler: onChange,
+    keydownHandler: onKeyDown,
+    inputElesRef,
   } = useCodeInputHook(props);
-  return <>{
-    new Array(props.length).fill(0).map((_, index) =>
-      <Child
-        key={index}
-        index={index}
-        value={arr[index]}
-        activeIdx={activeIdx}
-        onFocus={focusHandler}
-        onChange={inputHandler}
-        onKeyDown={keydownHandler}
-      />
-    )
-  }</>;
-}
+  return (
+    <>
+      {new Array(props.length).fill(0).map((_, index) => {
+        const onFocus = () => focusHandler(index);
+        return (
+          <Input
+            key={index}
+            value={arr[index] || ""}
+            onFocus={onFocus}
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+            ref={(ele) => (inputElesRef.current[index] = ele)}
+            role="input"
+          />
+        );
+      })}
+    </>
+  );
+};
 
-export default CodeInput
+export default CodeInput;
 
 /*==============utils=================*/
 export const BACKSPACE_KEY_CODE = 13;
@@ -137,28 +118,4 @@ export function checkIsDelOrbackspaceEv(ev: React.KeyboardEvent) {
     [BACKSPACE_KEY, DELETE_KEY].includes(key) ||
     [BACKSPACE_KEY_CODE, DEL_KEY_CODE].includes(keyCode)
   );
-}
-
-function getParentEle(node: HTMLElement) {
-  return node?.parentElement || node?.parentNode;
-}
-
-function findDomIdxOfParent(node: any) {
-  if (!node) return -1;
-  const parentEle = getParentEle(node),
-    children = parentEle?.children || parentEle?.childNodes;
-  if (!children) return -1;
-  for (const idx in children) {
-    if (node === children[idx]) return Number(idx);
-  }
-  return -1;
-}
-
-type InputElementType =
-  | React.FormEvent<HTMLInputElement>
-  | React.KeyboardEvent<HTMLInputElement>;
-
-function getIdxFromInputEleEv<T extends InputElementType>(ev: T) {
-  const inputEle = ev.currentTarget;
-  return findDomIdxOfParent(inputEle);
 }

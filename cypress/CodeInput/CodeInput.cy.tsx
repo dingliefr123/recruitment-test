@@ -41,7 +41,6 @@ describe('CodeInput end2end test', () => {
     firstInput.type(inputChar);
     firstInput.should('have.value', inputChar);
     firstInput.type('{backspace}');
-    firstInput.type('{backspace}');
     firstInput.should('have.value', '');
   });
 
