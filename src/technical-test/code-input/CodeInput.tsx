@@ -50,16 +50,19 @@ export function useCodeInputHook({
       setActiveIdx((curIdx) => {
         const prevIdx = Math.max(0, curIdx - 1);
         setArr((arr) => {
-          console.log(arr, "  ", curIdx);
-          let hasValueAtCurIdx = Boolean(arr[curIdx]);
+          const hasValueAtCurIdx = Boolean(arr[curIdx]);
           if (hasValueAtCurIdx) arr[curIdx] = "";
           else arr[prevIdx] = "";
           return [...arr];
         });
+        if (curIdx === MAX_VALID_INDEX) {
+          const val = inputElesRef.current[curIdx]?.value;
+          if (val) return curIdx;
+        }
         return prevIdx;
       });
     },
-    [setArr, setActiveIdx]
+    [setArr, setActiveIdx, MAX_VALID_INDEX, inputElesRef]
   );
 
   useEffect(() => {
